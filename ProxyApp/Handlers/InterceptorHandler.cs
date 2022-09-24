@@ -29,7 +29,7 @@ namespace ProxyApp.Handlers
                 await ProxyHandler.CopyProxyHttpResponse(context, response);
             }
             else
-                // EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE
+                // If the request is not coming from the endpoints cause no X-SOURCE header is set
                 await _next(context);
         }
     }
