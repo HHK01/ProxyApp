@@ -8,7 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE
+// Get the endpoint configuration from the appsettings.json
 builder.Services.Configure<List<ProxyApp.Model.Endpoint>>(builder.Configuration.GetSection("Endpoints"));
 
 var app = builder.Build();
@@ -30,7 +30,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE,EXPLAIN HERE
+// Add the interceptor middleware in the configuration of the app
 app.UseMiddleware<InterceptorHandler>();
 app.UseAuthorization();
 app.MapControllers();

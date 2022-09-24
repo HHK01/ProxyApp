@@ -78,11 +78,21 @@ namespace ProxyApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Endpoint2()
         {
-            HttpResponseMessage response = await _client.GetAsync(config.Value.FirstOrDefault(p => p.Name == "Endpoint1").BackendSwaggerEndpoint);
+            HttpResponseMessage response = await _client.GetAsync(config.Value.FirstOrDefault(p => p.Name == "Endpoint2").BackendSwaggerEndpoint);
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();
             JObject json = JObject.Parse(responseBody);
             JToken paths = json["paths"];
+
+            // Change the host to the host of the current running application, so that the requests initiated in the Swagger UI be routed back to this application and handled by the Interceptor
+            json["host"] = Request.Host.ToString();
+
+            // Add any supported schemes, for localhost in our application It's going to be http only
+            List<string> supportedSchemes = new List<string>();
+            supportedSchemes.Add(Request.Scheme);
+            json["schemes"] = JToken.FromObject(supportedSchemes);
+
+            // Add a header parameter called "X-SOURCE" and set the value to the endpoint name, we will use this changge in the "InterceptorHandler.cs"
             foreach (JProperty item in paths.Children())
             {
                 try
@@ -92,17 +102,15 @@ namespace ProxyApp.Controllers
 
                     Parameter source = new Parameter();
                     source.name = "X-SOURCE";
+                    source.@default = "Endpoint1";
+                    source.@in = "header";
+                    source.schema = new Schema
+                    {
+                        type = "string",
+                        format = "string",
+                        required = "true",
+                    };
 
-                    // REVIEW THIS, REVIEW THIS, REVIEW THIS, REVIEW THIS, REVIEW THIS, REVIEW THIS, REVIEW THIS
-                    //  source.@default = "Endpoint2";
-                    //  source.@in = "header";
-                    //  source.schema = new Schema
-                    //  {
-                    //      type = "string",
-                    //      format = "string",
-                    //      required = "true",
-                    //  };
-                    // 
                     jParameters.Add(JObject.FromObject(source));
                 }
                 catch (Exception)
@@ -110,6 +118,7 @@ namespace ProxyApp.Controllers
                     continue;
                 }
             }
+
             return Ok(json.ToString());
         }
     }
